@@ -13,7 +13,6 @@ export class UsersService {
     firstName: string,
     lastName: string,
   ): Promise<Member> {
-
     const member = await this.memberRepository.findOne({
       email: email,
     });

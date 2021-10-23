@@ -7,5 +7,4 @@ import { GlobalConstants } from './constants';
   providers: [AppLogger, GlobalConstants],
   exports: [AppLogger, GlobalConstants],
 })
-
 export class CommonModule {}
