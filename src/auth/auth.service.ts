@@ -3,13 +3,13 @@ import {
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { OAuth2Client } from 'google-auth-library';
 import { Repository } from 'typeorm';
 import { AppLogger } from '../common/logger';
 import { TeamMemberRole } from '../domain/team-member-role';
 import { UsersService } from '../users/users.service';
-import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
