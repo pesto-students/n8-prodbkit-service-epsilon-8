@@ -1,6 +1,7 @@
 import {
   Inject,
   Injectable,
+  NotFoundException,
   InternalServerErrorException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -10,7 +11,7 @@ import { AppLogger } from '../common/logger';
 import { TeamMemberRole } from '../domain/team-member-role';
 import { UsersService } from '../users/users.service';
 import { ConfigService } from '@nestjs/config';
-
+import { compare } from 'bcryptjs';
 @Injectable()
 export class AuthService {
   constructor(
@@ -67,6 +68,47 @@ export class AuthService {
         username: loginTicket.getPayload().email,
         userId: member.id,
         sub: loginTicket.getUserId(),
+        permissions: listOfRoleAndTeams,
+      };
+
+      return {
+        access_token: this.jwtService.sign(payload),
+      };
+    } catch (err) {
+      this.logger.error(err);
+      const errorString = JSON.stringify(err, Object.getOwnPropertyNames(err));
+      throw new InternalServerErrorException(errorString);
+    }
+  }
+
+  async loginWithEmailAndPassword(email: string, password: string) {
+    try {
+      const member = await this.usersService.findOne(email);
+
+      const doPasswordsMatch = compare(password, member.password);
+
+      if (!doPasswordsMatch) {
+        throw new NotFoundException(
+          'The credentials provided does not match any records.',
+        );
+      }
+
+      const members: TeamMemberRole[] = await this.teamMemberRoleRepository
+        .createQueryBuilder('tmr')
+        .innerJoinAndSelect('tmr.member', 'm')
+        .innerJoinAndSelect('tmr.team', 't')
+        .innerJoinAndSelect('tmr.role', 'r')
+        .where('m.email = :userEmail', { email })
+        .getMany();
+
+      const listOfRoleAndTeams = members.map(({ role, team }) => ({
+        teamId: team.teamId,
+        roleId: role.id,
+      }));
+
+      const payload = {
+        username: email,
+        userId: member.id,
         permissions: listOfRoleAndTeams,
       };
 
