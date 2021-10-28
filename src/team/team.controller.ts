@@ -13,6 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiProperty, ApiTags } from '@nestjs/swagger';
+import { GlobalConstants } from '../common/constants';
 import { DeepPartial, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -90,7 +91,9 @@ export class TeamController {
   async create(@Request() request: any, @Body() body: DeepPartial<Team>) {
     try {
       const team = await this.teamRepository.save(body);
-      const role = await this.roleRespository.findOne('TL');
+      const role = await this.roleRespository.findOne(
+        GlobalConstants.TEAM_LEAD_ROLE,
+      );
       if (!role) {
         throw new NotFoundException();
       }
