@@ -19,7 +19,7 @@ export interface TeamStatsDTO {
 }
 
 export interface OnboardedTeamsDTO {
-  teamCount: number;
+  teams: number;
   month: string;
 }
 @Injectable()
@@ -63,41 +63,37 @@ export class AppService {
           },
       );
 
-      /*
-        We are mimicking some data for showcasing charts on the front end.
-        Once sufficient data is collected, this will be removed.
-      */
+      const allTeams = await this.teamRepository
+        .createQueryBuilder('t')
+        .groupBy('t.teamId')
+        .addGroupBy('t.created')
+        .getMany();
 
-      const onboardingStats: OnboardedTeamsDTO[] = [
-        {
-          teamCount: 1,
-          month: 'May',
-        },
-        {
-          teamCount: 2,
-          month: 'June',
-        },
-        {
-          teamCount: 4,
-          month: 'July',
-        },
-        {
-          teamCount: 3,
-          month: 'August',
-        },
-        {
-          teamCount: 5,
-          month: 'September',
-        },
-        {
-          teamCount: 3,
-          month: 'October',
-        },
-      ];
+      const modifiedTeams = allTeams.map(({ name, created }) => ({
+        name,
+        created: new Date(created).toLocaleString('default', { month: 'long' }),
+      }));
+
+      const monthWiseTeamCountObj = {};
+
+      modifiedTeams.forEach((team) => {
+        if (!Object.keys(monthWiseTeamCountObj).includes(team.created)) {
+          monthWiseTeamCountObj[team.created] = 1;
+        } else {
+          monthWiseTeamCountObj[team.created]++;
+        }
+      });
+
+      const onboardingStats: OnboardedTeamsDTO[] = Object.entries(
+        monthWiseTeamCountObj,
+      ).map((monthWiseTeamCount) => ({
+        month: monthWiseTeamCount[0],
+        teams: monthWiseTeamCount[1] as number,
+      }));
 
       return {
         stats: {
-          database: databaseStats,
+          databases: databaseStats,
           teams: teamStats,
           onboardedTeams: onboardingStats,
         },
