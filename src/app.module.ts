@@ -13,6 +13,8 @@ import { MemberController } from './member/member.controller';
 import { RepositoryModule } from './repository/repository.module';
 import { TeamController } from './team/team.controller';
 import { UsersModule } from './users/users.module';
+import { DbCredentialController } from './db-credential/db-credential.controller';
+import { AuditLogController } from './audit-log/audit-log.controller';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -27,7 +29,14 @@ import { UsersModule } from './users/users.module';
     RepositoryModule,
     CommonModule,
   ],
-  controllers: [AppController, TeamController, MemberController, DbController],
+  controllers: [
+    AppController,
+    TeamController,
+    MemberController,
+    DbController,
+    DbCredentialController,
+    AuditLogController,
+  ],
   providers: [AppService],
 })
 export class AppModule {}
