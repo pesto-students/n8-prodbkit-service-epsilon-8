@@ -11,7 +11,6 @@ import {
 import { TeamDb } from './team-db';
 import { DatabaseCredential } from './database-credential';
 
-import { DatabaseCredential } from './database-credential';
 @Index('database_pkey', ['id'], { unique: true })
 @Entity('database', { schema: 'public' })
 export class Database {

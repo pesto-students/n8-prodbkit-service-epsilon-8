@@ -74,6 +74,7 @@ interface MemberDTO {
   email: string;
   role: string;
 }
+
 @ApiBearerAuth()
 @ApiTags('db')
 @Controller('/api/db')
@@ -88,6 +89,7 @@ export class DbController {
     @Inject('DB_CREDENTIAL_REPOSITORY')
     private dbCredentialRepository: Repository<DatabaseCredential>,
     private logger: AppLogger,
+
   ) {}
 
   @UseGuards(JwtAuthGuard)
