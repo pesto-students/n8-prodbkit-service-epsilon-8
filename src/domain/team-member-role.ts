@@ -13,6 +13,7 @@ import { DatabaseCredential } from './database-credential';
 import { Member } from './member';
 import { Role } from './role';
 import { Team } from './team';
+import { AuditLog } from './audit-log';
 
 @Index('team_member_role_pkey', ['id'], { unique: true })
 @Entity('team_member_role', { schema: 'public' })
@@ -46,4 +47,7 @@ export class TeamMemberRole {
     (databaseCredential) => databaseCredential.creator,
   )
   databaseCredentials: DatabaseCredential[];
+
+  @OneToMany(() => AuditLog, (auditLog) => auditLog.actor)
+  auditLogs: AuditLog[];
 }
