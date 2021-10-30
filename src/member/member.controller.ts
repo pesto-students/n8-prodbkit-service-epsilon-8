@@ -36,6 +36,7 @@ interface ListTeamMemberDTO {
   email: string;
   name: string;
 }
+
 @ApiBearerAuth()
 @ApiTags('member')
 @Controller('/api/member')
@@ -46,6 +47,7 @@ export class MemberController {
     @Inject('TEAM_REPOSITORY') private teamRepository: Repository<Team>,
     @Inject('TEAM_MEMBER_ROLE_REPOSITORY')
     private teamMemberRoleRepository: Repository<TeamMemberRole>,
+
     @Inject('DB_CREDENTIAL_REPOSITORY')
     private dbCredentialRepository: Repository<DatabaseCredential>,
     @Inject('TEAM_DB_REPOSITORY')
@@ -66,14 +68,18 @@ export class MemberController {
         .getMany();
 
       const dtos = members.map(
-        (m) =>
+        ({
+          id,
+          member: { id: member_id, username, name, email },
+          role: { id: role_id },
+        }) =>
           <ListTeamMemberDTO>{
-            id: m.id,
-            member_id: m.member.id,
-            username: m.member.username,
-            name: m.member.name,
-            email: m.member.email,
-            role: m.role.id,
+            id: id,
+            member_id,
+            username: username,
+            name: name,
+            email: email,
+            role: role_id,
           },
       );
 

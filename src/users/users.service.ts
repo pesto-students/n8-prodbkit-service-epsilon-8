@@ -12,7 +12,8 @@ export class UsersService {
     email: string,
     firstName: string,
     lastName: string,
-  ): Promise<Member | undefined> {
+  ): Promise<Member> {
+
     const member = await this.memberRepository.findOne({
       email: email,
     });
@@ -29,9 +30,9 @@ export class UsersService {
 
   async findOne(email: string): Promise<Member | null> {
     const member = await this.memberRepository.findOne({
-      email: email,
+      email,
     });
 
-    return member ? member : null;
+    return member;
   }
 }
