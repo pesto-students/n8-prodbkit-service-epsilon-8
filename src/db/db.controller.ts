@@ -13,6 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiProperty, ApiTags } from '@nestjs/swagger';
+import { GlobalConstants } from '../common/constants';
 import { DeepPartial, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -74,6 +75,7 @@ interface MemberDTO {
   email: string;
   role: string;
 }
+
 @ApiBearerAuth()
 @ApiTags('db')
 @Controller('/api/db')
@@ -103,6 +105,7 @@ export class DbController {
         .leftJoinAndSelect('tmr.member', 'm')
         .leftJoinAndSelect('tmr.role', 'r');
       let dbs = [];
+
       if (req.user.permissions.some((p) => p.roleId === 'ADMIN')) {
         dbs = await base.getMany();
       } else {
@@ -164,13 +167,19 @@ export class DbController {
   async create(@Request() req, @Body() body: DeepPartial<Database>) {
     try {
       const result = await this.dbRespository.save(body);
+
       this.eventEmitter.emit('db.created', {
         body,
         user: req.user,
       });
+
       const teams: Team[] = await Promise.all(
         req.user.permissions
-          .filter((p) => p.roleId === 'ADMIN' || p.roleId === 'TL')
+          .filter(
+            (p) =>
+              p.roleId === GlobalConstants.ADMIN_ROLE ||
+              p.roleId === GlobalConstants.TEAM_LEAD_ROLE,
+          )
           .map((p) => p.teamId)
           .map(async (teamId) => this.teamRepository.findOne({ teamId })),
       );
@@ -196,6 +205,9 @@ export class DbController {
           teams: req.user.permissions.map((p) => p.teamId),
         })
         .getMany();
+
+      const reallyLongTermValidDate = '2060-01-01';
+
       await Promise.all(
         teamMemberRoles.map(async (tmr) => {
           const newCredential = new DatabaseCredential();
@@ -208,7 +220,7 @@ export class DbController {
           newCredential.status = 'pending';
           newCredential.accessLevel = 'ro';
           // Isaac Newton predicted the world will have end by 2060 ;)
-          newCredential.expiration = new Date('2060-01-01');
+          newCredential.expiration = new Date(reallyLongTermValidDate);
           newCredential.username = `${
             tmr.member.email.match(/^([^@]*)@/)[1]
           }_${newCredential.expiration?.getTime()}_${
@@ -233,6 +245,7 @@ export class DbController {
     @Body() body: QueryDeepPartialEntity<Database>,
     @Request() req,
   ) {
+
     if (!req.user.permissions.some((p) => p.roleId === 'ADMIN')) {
       throw new UnauthorizedException(
         'You can only do this if you are an adminstrator',

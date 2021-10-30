@@ -52,6 +52,7 @@ import { AuditLog } from '../domain/audit-log';
         connection.getRepository(DatabaseCredential),
       inject: ['DATABASE_CONNECTION'],
     },
+
     {
       provide: 'AUDIT_LOG_REPOSITORY',
       useFactory: (connection: Connection) =>

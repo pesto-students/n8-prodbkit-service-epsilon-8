@@ -13,6 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiProperty, ApiTags } from '@nestjs/swagger';
+import { GlobalConstants } from '../common/constants';
 import { DeepPartial, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -92,11 +93,15 @@ export class TeamController {
   async create(@Request() request: any, @Body() body: DeepPartial<Team>) {
     try {
       const team = await this.teamRepository.save(body);
+
       this.eventEmitter.emit('team.created', {
         body,
         user: request.user,
       });
       const role = await this.roleRespository.findOne('TL');
+      const role = await this.roleRespository.findOne(
+        GlobalConstants.TEAM_LEAD_ROLE,
+      );
       if (!role) {
         throw new NotFoundException();
       }
@@ -149,6 +154,10 @@ export class TeamController {
       user: request.user,
     });
     return response;
+    @Param('id') id: string,
+    @Body() body: QueryDeepPartialEntity<Team>,
+  ) {
+    return this.teamRepository.update(id, body);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -160,5 +169,7 @@ export class TeamController {
       user: request.user,
     });
     return response;
+  async softDelete(@Param('id') id: string) {
+    return this.teamRepository.softDelete(id);
   }
 }
