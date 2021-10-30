@@ -98,7 +98,6 @@ export class TeamController {
         body,
         user: request.user,
       });
-      const role = await this.roleRespository.findOne('TL');
       const role = await this.roleRespository.findOne(
         GlobalConstants.TEAM_LEAD_ROLE,
       );
@@ -154,10 +153,6 @@ export class TeamController {
       user: request.user,
     });
     return response;
-    @Param('id') id: string,
-    @Body() body: QueryDeepPartialEntity<Team>,
-  ) {
-    return this.teamRepository.update(id, body);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -169,7 +164,5 @@ export class TeamController {
       user: request.user,
     });
     return response;
-  async softDelete(@Param('id') id: string) {
-    return this.teamRepository.softDelete(id);
   }
 }
