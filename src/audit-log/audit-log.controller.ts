@@ -16,17 +16,13 @@ import { AuditLog } from '../domain/audit-log';
 import { Database } from '../domain/database';
 import { TeamMemberRole } from '../domain/team-member-role';
 import { GlobalConstants } from '../common/constants';
+import { Team } from 'src/domain/team';
+import { Member } from 'src/domain/member';
 
 interface CredentialsCreated {
   body: CreateDbDTO;
   user: TeamMemberRole;
 }
-
-interface CredentialsDeleted {
-  id: string;
-  user: TeamMemberRole;
-}
-
 interface DbCreated {
   body: DeepPartial<Database>;
   user: any;
@@ -37,11 +33,24 @@ interface DbUpdated {
   user: any;
 }
 
-interface DbDeleted {
+interface GenericDomainDeleted {
   id: string;
   user: any;
 }
+interface TeamCreated {
+  body: DeepPartial<Team>;
+  user: any;
+}
 
+interface TeamUpdated {
+  body: QueryDeepPartialEntity<Team>;
+  user: any;
+}
+
+interface MemberCreated {
+  body: QueryDeepPartialEntity<Member>;
+  user: any;
+}
 interface ListAuditLogDTO {
   id: string;
   actor: any;
@@ -112,7 +121,7 @@ export class AuditLogController {
   }
 
   @OnEvent('db-credential.deleted', { async: true })
-  async onDbCredentialDeleted(payload: CredentialsDeleted) {
+  async onDbCredentialDeleted(payload: GenericDomainDeleted) {
     const log = new AuditLog();
     log.actor = await this.toTeamMemberRoleAny(payload.user);
     log.action = JSON.stringify({
@@ -145,12 +154,67 @@ export class AuditLogController {
   }
 
   @OnEvent('db.deleted', { async: true })
-  async onDbDeleted(payload: DbDeleted) {
+  async onDbDeleted(payload: GenericDomainDeleted) {
     const log = new AuditLog();
     log.actor = await this.toTeamMemberRoleAdmin(payload.user);
     log.action = JSON.stringify({
       payload: payload,
       type: 'db.updated',
+    });
+    await this.auditRepository.save(log);
+  }
+
+  @OnEvent('team.created', { async: true })
+  async onTeamCreated(payload: TeamCreated) {
+    const log = new AuditLog();
+    log.actor = await this.toTeamMemberRoleAny(payload.user);
+    log.action = JSON.stringify({
+      payload: payload,
+      type: 'team.created',
+    });
+    await this.auditRepository.save(log);
+  }
+
+  @OnEvent('team.updated', { async: true })
+  async onTeamUpdated(payload: TeamUpdated) {
+    const log = new AuditLog();
+    log.actor = await this.toTeamMemberRoleAny(payload.user);
+    log.action = JSON.stringify({
+      payload: payload,
+      type: 'team.updated',
+    });
+    await this.auditRepository.save(log);
+  }
+
+  @OnEvent('team.deleted', { async: true })
+  async onTeamDeleted(payload: GenericDomainDeleted) {
+    const log = new AuditLog();
+    log.actor = await this.toTeamMemberRoleAny(payload.user);
+    log.action = JSON.stringify({
+      payload: payload,
+      type: 'team.deleted',
+    });
+    await this.auditRepository.save(log);
+  }
+
+  @OnEvent('member.created', { async: true })
+  async onMemberCreated(payload: MemberCreated) {
+    const log = new AuditLog();
+    log.actor = await this.toTeamMemberRoleAny(payload.user);
+    log.action = JSON.stringify({
+      payload: payload,
+      type: 'member.created',
+    });
+    await this.auditRepository.save(log);
+  }
+
+  @OnEvent('member.deleted', { async: true })
+  async onMemberDeleted(payload: GenericDomainDeleted) {
+    const log = new AuditLog();
+    log.actor = await this.toTeamMemberRoleAny(payload.user);
+    log.action = JSON.stringify({
+      payload: payload,
+      type: 'member.deleted',
     });
     await this.auditRepository.save(log);
   }
