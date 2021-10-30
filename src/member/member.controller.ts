@@ -66,14 +66,18 @@ export class MemberController {
         .getMany();
 
       const dtos = members.map(
-        (m) =>
+        ({
+          id,
+          member: { id: member_id, username, name, email },
+          role: { id: role_id },
+        }) =>
           <ListTeamMemberDTO>{
-            id: m.id,
-            member_id: m.member.id,
-            username: m.member.username,
-            name: m.member.name,
-            email: m.member.email,
-            role: m.role.id,
+            id: id,
+            member_id,
+            username: username,
+            name: name,
+            email: email,
+            role: role_id,
           },
       );
 
