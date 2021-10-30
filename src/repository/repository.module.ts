@@ -9,6 +9,7 @@ import { Team } from '../domain/team';
 import { TeamDb } from '../domain/team-db';
 import { TeamMemberRole } from '../domain/team-member-role';
 import { DatabaseCredential } from '../domain/database-credential';
+import { AuditLog } from '../domain/audit-log';
 
 @Module({
   imports: [DatabaseModule, CommonModule],
@@ -51,6 +52,13 @@ import { DatabaseCredential } from '../domain/database-credential';
         connection.getRepository(DatabaseCredential),
       inject: ['DATABASE_CONNECTION'],
     },
+
+    {
+      provide: 'AUDIT_LOG_REPOSITORY',
+      useFactory: (connection: Connection) =>
+        connection.getRepository(AuditLog),
+      inject: ['DATABASE_CONNECTION'],
+    },
   ],
   exports: [
     'MEMBER_REPOSITORY',
@@ -60,6 +68,7 @@ import { DatabaseCredential } from '../domain/database-credential';
     'DB_REPOSITORY',
     'TEAM_DB_REPOSITORY',
     'DB_CREDENTIAL_REPOSITORY',
+    'AUDIT_LOG_REPOSITORY',
   ],
 })
 export class RepositoryModule {}

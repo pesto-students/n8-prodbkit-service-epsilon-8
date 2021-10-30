@@ -23,6 +23,7 @@ import { DatabaseCredential } from '../domain/database-credential';
 import { Team } from '../domain/team';
 import { TeamDb } from '../domain/team-db';
 import { TeamMemberRole } from '../domain/team-member-role';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 export class CreateDbDTO {
   @ApiProperty()
@@ -89,7 +90,7 @@ export class DbController {
     @Inject('DB_CREDENTIAL_REPOSITORY')
     private dbCredentialRepository: Repository<DatabaseCredential>,
     private logger: AppLogger,
-
+    private eventEmitter: EventEmitter2,
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -104,11 +105,8 @@ export class DbController {
         .leftJoinAndSelect('tmr.member', 'm')
         .leftJoinAndSelect('tmr.role', 'r');
       let dbs = [];
-      if (
-        req.user.permissions.some(
-          (p) => p.roleId === GlobalConstants.ADMIN_ROLE,
-        )
-      ) {
+
+      if (req.user.permissions.some((p) => p.roleId === 'ADMIN')) {
         dbs = await base.getMany();
       } else {
         if (req.user.permissions.length == 0) {
@@ -169,6 +167,12 @@ export class DbController {
   async create(@Request() req, @Body() body: DeepPartial<Database>) {
     try {
       const result = await this.dbRespository.save(body);
+
+      this.eventEmitter.emit('db.created', {
+        body,
+        user: req.user,
+      });
+
       const teams: Team[] = await Promise.all(
         req.user.permissions
           .filter(
@@ -241,28 +245,33 @@ export class DbController {
     @Body() body: QueryDeepPartialEntity<Database>,
     @Request() req,
   ) {
-    if (
-      !req.user.permissions.some((p) => p.roleId === GlobalConstants.ADMIN_ROLE)
-    ) {
+
+    if (!req.user.permissions.some((p) => p.roleId === 'ADMIN')) {
       throw new UnauthorizedException(
         'You can only do this if you are an adminstrator',
       );
     }
     const result = await this.dbRespository.update(id, body);
+    this.eventEmitter.emit('db.updated', {
+      body,
+      user: req.user,
+    });
     return result;
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async softDelete(@Param('id') id: string, @Request() req) {
-    if (
-      !req.user.permissions.some((p) => p.roleId === GlobalConstants.ADMIN_ROLE)
-    ) {
+    if (!req.user.permissions.some((p) => p.roleId === 'ADMIN')) {
       throw new UnauthorizedException(
         'You can only do this if you are an adminstrator',
       );
     }
     const result = await this.dbRespository.softDelete(id);
+    this.eventEmitter.emit('db.deleted', {
+      id,
+      user: req.user,
+    });
     return result;
   }
 }
