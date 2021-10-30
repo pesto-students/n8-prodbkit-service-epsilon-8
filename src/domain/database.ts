@@ -10,6 +10,9 @@ import {
 } from 'typeorm';
 import { TeamDb } from './team-db';
 
+import { DatabaseCredential } from './database-credential';
+
+
 @Index('database_pkey', ['id'], { unique: true })
 @Entity('database', { schema: 'public' })
 export class Database {
@@ -48,4 +51,10 @@ export class Database {
 
   @OneToMany(() => TeamDb, (teamDb) => teamDb.database)
   teamDbs: TeamDb[];
+
+  @OneToMany(
+    () => DatabaseCredential,
+    (databaseCredential) => databaseCredential.database,
+  )
+  databaseCredentials: DatabaseCredential[];
 }
