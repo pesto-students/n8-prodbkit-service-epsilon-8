@@ -7,6 +7,7 @@ import { Team } from '../domain/team';
 import { TeamDb } from '../domain/team-db';
 import { TeamMemberRole } from '../domain/team-member-role';
 import { DatabaseCredential } from '../domain/database-credential';
+import { AuditLog } from 'src/domain/audit-log';
 
 export const databaseProviders = [
   {
@@ -28,6 +29,7 @@ export const databaseProviders = [
           TeamMemberRole,
           Team,
           DatabaseCredential,
+          AuditLog,
         ],
         synchronize: configService.get<string>('TESTING') === 'true',
       }),
