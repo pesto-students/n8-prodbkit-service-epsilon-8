@@ -10,7 +10,6 @@ import { TeamDb } from '../domain/team-db';
 import { TeamMemberRole } from '../domain/team-member-role';
 import { DatabaseCredential } from '../domain/database-credential';
 
-
 @Module({
   imports: [DatabaseModule, CommonModule],
   providers: [

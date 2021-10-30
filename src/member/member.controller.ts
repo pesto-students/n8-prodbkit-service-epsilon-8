@@ -36,7 +36,6 @@ interface ListTeamMemberDTO {
   email: string;
   name: string;
 }
-
 @ApiBearerAuth()
 @ApiTags('member')
 @Controller('/api/member')
@@ -47,7 +46,6 @@ export class MemberController {
     @Inject('TEAM_REPOSITORY') private teamRepository: Repository<Team>,
     @Inject('TEAM_MEMBER_ROLE_REPOSITORY')
     private teamMemberRoleRepository: Repository<TeamMemberRole>,
-
     @Inject('DB_CREDENTIAL_REPOSITORY')
     private dbCredentialRepository: Repository<DatabaseCredential>,
     @Inject('TEAM_DB_REPOSITORY')
