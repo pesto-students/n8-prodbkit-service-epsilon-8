@@ -26,6 +26,9 @@ export class Member {
   @Column('character varying', { name: 'username', nullable: true })
   username: string | null;
 
+  @Column('character varying', { name: 'password', nullable: true })
+  password: string | null;
+
   @CreateDateColumn()
   created!: Date;
 

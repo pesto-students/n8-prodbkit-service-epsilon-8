@@ -21,6 +21,7 @@ import { Member } from '../domain/member';
 import { Role } from '../domain/role';
 import { Team } from '../domain/team';
 import { TeamMemberRole } from '../domain/team-member-role';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 export class CreateTeamDTO {
   @ApiProperty()
@@ -49,6 +50,7 @@ export class TeamController {
     @Inject('TEAM_MEMBER_ROLE_REPOSITORY')
     private teamMemberRoleRepository: Repository<TeamMemberRole>,
     private logger: AppLogger,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -90,6 +92,10 @@ export class TeamController {
   async create(@Request() request: any, @Body() body: DeepPartial<Team>) {
     try {
       const team = await this.teamRepository.save(body);
+      this.eventEmitter.emit('team.created', {
+        body,
+        user: request.user,
+      });
       const role = await this.roleRespository.findOne('TL');
       if (!role) {
         throw new NotFoundException();
@@ -133,15 +139,26 @@ export class TeamController {
   @UseGuards(JwtAuthGuard)
   @Put(':id')
   async update(
+    @Request() request: any,
     @Param('id') id: string,
     @Body() body: QueryDeepPartialEntity<Team>,
   ) {
-    return this.teamRepository.update(id, body);
+    const response = await this.teamRepository.update(id, body);
+    this.eventEmitter.emit('team.updated', {
+      body,
+      user: request.user,
+    });
+    return response;
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  async softDelete(@Param('id') id: string) {
-    return this.teamRepository.softDelete(id);
+  async softDelete(@Request() request: any, @Param('id') id: string) {
+    const response = await this.teamRepository.softDelete(id);
+    this.eventEmitter.emit('team.deleted', {
+      id,
+      user: request.user,
+    });
+    return response;
   }
 }

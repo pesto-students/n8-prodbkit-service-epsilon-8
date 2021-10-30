@@ -3,9 +3,15 @@ import { ApiBody, ApiProperty, ApiTags } from '@nestjs/swagger';
 import { AppService } from './app.service';
 import { AuthService } from './auth/auth.service';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
-export class LoginDTO {
+export class GoogleLoginDTO {
   @ApiProperty()
   id_token: string;
+}
+
+export class LoginDTO {
+  @ApiProperty()
+  email: string;
+  password: string;
 }
 
 @ApiTags('auth')
@@ -16,10 +22,19 @@ export class AppController {
     private appService: AppService,
   ) {}
 
+  @ApiBody({ type: GoogleLoginDTO })
+  @Post('loginViaGoogle')
+  async loginViaGoogle(@Body('id_token') id_token: string) {
+    return this.authService.loginWithIdToken(id_token);
+  }
+
   @ApiBody({ type: LoginDTO })
   @Post('login')
-  async login(@Body('id_token') id_token: string) {
-    return this.authService.loginWithIdToken(id_token);
+  async login(
+    @Body('email') email: string,
+    @Body('password') password: string,
+  ) {
+    return this.authService.loginWithEmailAndPassword(email, password);
   }
 
   @UseGuards(JwtAuthGuard)

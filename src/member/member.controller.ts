@@ -9,6 +9,7 @@ import {
   Param,
   Post,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiProperty, ApiTags } from '@nestjs/swagger';
 import { Repository } from 'typeorm';
@@ -20,6 +21,7 @@ import { Role } from '../domain/role';
 import { Team } from '../domain/team';
 import { TeamDb } from '../domain/team-db';
 import { TeamMemberRole } from '../domain/team-member-role';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 export class CreateTeamMemberDTO {
   @ApiProperty()
@@ -51,6 +53,7 @@ export class MemberController {
     @Inject('TEAM_DB_REPOSITORY')
     private teamDbRepository: Repository<TeamDb>,
     private logger: AppLogger,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -122,6 +125,7 @@ export class MemberController {
   @UseGuards(JwtAuthGuard)
   @Post(':teamId')
   async addTeamMember(
+    @Request() request: any,
     @Param('teamId') teamId: string,
     @Body() body: [CreateTeamMemberDTO],
   ) {
@@ -146,6 +150,10 @@ export class MemberController {
           member.email = value.email;
           member.name = value.name;
           member = await this.memberRepository.save(member);
+          this.eventEmitter.emit('member.added', {
+            body,
+            user: request.user,
+          });
         }
 
         let teamMemberRole = await this.teamMemberRoleRepository
@@ -237,7 +245,13 @@ export class MemberController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  async softDelete(@Param('id') id: string) {
-    return this.teamMemberRoleRepository.softDelete(id);
+  async softDelete(@Request() request: any, @Param('id') id: string) {
+    const response = await this.teamMemberRoleRepository.softDelete(id);
+    this.eventEmitter.emit('member.deleted', {
+      id,
+      user: request.user,
+    });
+
+    return response;
   }
 }
