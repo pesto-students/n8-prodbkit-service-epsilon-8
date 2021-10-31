@@ -42,9 +42,9 @@ GOOGLE_CLIENT_SECRET=
 
 This section gives you insight about the APIs that are part of our project.
 
-The API endpoints can be accessed here : http://13.127.49.144:3000/api/#/
+The API endpoints can be accessed here : http://ec2-13-232-176-94.ap-south-1.compute.amazonaws.com:3000/api/
 
-The CI CD Deployment can be accessed here : http://13.127.49.144:8080/job/dbacs-backend/
+The CI CD Deployment can be accessed here : http://ec2-13-127-49-144.ap-south-1.compute.amazonaws.com:8080/job/dbacs-backend/
 
 The Slack notifications are being delivered in our private slack channel :
 
