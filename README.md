@@ -1,6 +1,6 @@
 # Pro DB kit
 
-![ProDB-kit Logo](./src/assets/database-icon.svg)
+![ProDB-kit Logo](https://github.com/pesto-students/n8-prodbkit-epsilon-8/blob/feature/update-static-content/src/assets/database-icon.svg)
 
 Pro DB kit enables teams to manage database access without involving DB Admins / Devops / IT teams. It allows developers and their managers ( Team Lead, Engineering Managers etc. ) to grant access to the databases they have access to without any intervention from any of the teams administering databases.
 <br/>
